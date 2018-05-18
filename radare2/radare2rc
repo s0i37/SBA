@@ -1,0 +1,9 @@
+eco behelit
+e scr.color =2
+e scr.utf8 =true
+e scr.utf8.curvy =true
+$retdec='#!pipe /root/.config/radare2/prefix/bin/retdec'
+$snow='#!pipe python /root/.config/radare2/prefix/bin/snow.py'
+$xrefs_from='#!pipe /root/.config/radare2/prefix/bin/xrefs_from.py'
+$xrefs_to='#!pipe /root/.config/radare2/prefix/bin/xrefs_to.py'
+(dump , s $0, wtf `?v $S` @ $S!$SS)
