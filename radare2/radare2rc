@@ -1,9 +1,10 @@
 eco behelit
-e scr.color =2
-e scr.utf8 =true
-e scr.utf8.curvy =true
-$retdec='#!pipe /root/.config/radare2/prefix/bin/retdec'
-$snow='#!pipe python /root/.config/radare2/prefix/bin/snow.py'
-$xrefs_from='#!pipe /root/.config/radare2/prefix/bin/xrefs_from.py'
-$xrefs_to='#!pipe /root/.config/radare2/prefix/bin/xrefs_to.py'
+e scr.color = 2
+e scr.utf8 = true
+e scr.utf8.curvy = true
+e asm.varsub_only = false
+$retdec='#!pipe /home/soier/.config/radare2/prefix/bin/retdec'
+$snow='#!pipe python /home/soier/.config/radare2/prefix/bin/snow.py'
+$xfg='#!pipe /home/soier/.config/radare2/prefix/bin/xrefs_from_graph.py'
+$xtg='#!pipe /home/soier/.config/radare2/prefix/bin/xrefs_to_graph.py'
 (dump , s $0, wtf `?v $S` @ $S!$SS)
