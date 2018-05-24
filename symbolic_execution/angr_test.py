@@ -83,7 +83,7 @@ state = project.factory.entry_state( mode='symbolic', add_options={
                                     )
 
 
-#state.inspect.b('mem_read', when=angr.BP_AFTER, action=mem_read)
+#state.inspect.b('mem_read', when=angr.BP_AFTER, action=angr.BP_IPYTHON)
 #state.inspect.b('mem_write', when=angr.BP_AFTER, action=mem_write)
 state.inspect.b('instruction', when=angr.BP_AFTER, action=_exec)
 
@@ -101,7 +101,8 @@ state.regs.rdi = 0x4000
 state.regs.rsp = 0x5100
 state.regs.rip = 0x4006b0
 
-
+#proj.factory.block(0x0804873c).capstone.pp()
+#proj.factory.block(0x0804873c).vex.pp()
 
 sm = project.factory.simgr(state, save_unconstrained=True)  # SimulationManager
 sm.use_technique(angr.exploration_techniques.DFS())
@@ -123,6 +124,7 @@ def puts(state):
 i = 1
 branches = []
 basic_blocks = set()
+#sm.run()
 while sm.active and not sm.unconstrained:
 #while len(sm.unconstrained)==0:
 	print "step: %d" % i
