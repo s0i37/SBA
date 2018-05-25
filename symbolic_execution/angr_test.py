@@ -39,7 +39,7 @@ def disas(state):
 		break
 
 def mem_read(state):
-	print "[read] 0x%x: *0x%x -> 0x%X" % ( state.se.eval(state.regs.rip), state.se.eval(state.inspect.mem_read_address), state.se.eval(state.inspect.mem_read_expr) )
+	print "[read] 0x%x: *0x%x -> 0x%X" % ( state.scratch.ins_addr, state.se.eval(state.inspect.mem_read_address), state.se.eval(state.inspect.mem_read_expr) )
 	if 1 and state.se.eval(state.regs.rip) in (0x40067d, 0x40068b):
 		_state = state.copy()
 		_state.add_constraints( _state.inspect.mem_read_address == 0x4000 )
@@ -50,10 +50,10 @@ def mem_read(state):
 			print 'read by 0x4000 non-satisfiable'
 
 def mem_write(state):
-	print "[write] 0x%x: *0x%x <- 0x%X" % ( state.se.eval(state.regs.rip), state.se.eval(state.inspect.mem_write_address), state.se.eval(state.inspect.mem_write_expr) )
+	print "[write] 0x%x: *0x%x <- 0x%X" % ( state.scratch.ins_addr, state.se.eval(state.inspect.mem_write_address), state.se.eval(state.inspect.mem_write_expr) )
 
 def _exec(state):
-	print "[exec] 0x%x" % state.se.eval( state.regs.rip )
+	print "[exec] 0x%x" % state.scratch.ins_addr
 	#dump_regs(state)
 	#disas(state)
 
