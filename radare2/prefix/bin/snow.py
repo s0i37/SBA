@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import r2pipe
 from pygments import highlight
 from pygments.lexers import CppLexer
