@@ -26,7 +26,7 @@ def subs_walk(sub, deep):
 	for xref in r2.cmdj( "afxj @ {sub}".format(sub=sub) ):
 		if xref["type"] == "C":
 			addr = xref["to"]
-			_sub = r2.cmd( "afn @ {addr}".format(addr=addr) ) or addr
+			_sub = r2.cmd( "afn @ {addr}".format(addr=addr) ) or r2.cmd( "fd @ {addr}".format(addr=addr) ) or "0x%08x" % addr
 			if sub == _sub:
 				continue
 			subs.add( _sub )
