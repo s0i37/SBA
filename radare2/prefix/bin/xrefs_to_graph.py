@@ -1,16 +1,17 @@
 #!/usr/bin/python
 import r2pipe
+from sys import argv
 try:
 	pydot = __import__('pydot')
 	import os
 except:
 	pydot = False
 
-subs = range(100)
 r2 = r2pipe.open()
-
+known_subs = set()
+MAX_DEEP = int( argv[1] ) if len(argv) > 1 else 0xffffffff
 if pydot:
-	graph = pydot.Dot(graph_type='graph')
+	graph = pydot.Dot(graph_type='digraph')
 
 def get_node_color(sub):
 	if sub.find('imp.') != -1:
@@ -22,19 +23,24 @@ def get_node_color(sub):
 
 def subs_walk(sub, deep):
 	for xref in r2.cmdj( 'axtj {sub}'.format(sub=sub) ):
-		if xref["type"] == "call":
-			addr = xref["fcn_addr"]
-			_sub = xref["fcn_name"]
-			subs[deep] = (sub,addr)
+		if xref["type"].lower() == "call":
+			addr = xref.get("fcn_addr")
+			_sub = xref.get("fcn_name")
+			if not _sub or sub == _sub:
+				continue
 			print "%s%s" % (" "*deep, _sub)
 			if graph:
-				graph.add_edge( pydot.Edge( sub, _sub ) )
+				graph.add_edge( pydot.Edge( _sub, sub ) )
 				graph.add_node( pydot.Node( _sub, style="filled", fillcolor=get_node_color(_sub)[0], fontcolor=get_node_color(_sub)[1] ) )
+			if _sub in known_subs or deep >= MAX_DEEP:
+				continue
+			known_subs.add(_sub)
 			subs_walk(_sub, deep+1)
 
-sub = r2.cmd('afn')
-print sub
-subs_walk(sub, 1)
+current_sub = r2.cmd('afn')
+graph.add_node( pydot.Node( current_sub, style="filled", fillcolor=get_node_color(current_sub)[0], fontcolor=get_node_color(current_sub)[1] ) )
+print current_sub
+subs_walk(current_sub, 1)
 
 if graph:
 	graph.write_png('xrefs_to_graph.png')

@@ -11,7 +11,7 @@ r2 = r2pipe.open()
 known_subs = set()
 MAX_DEEP = int( argv[1] ) if len(argv) > 1 else 0xffffffff
 if pydot:
-	graph = pydot.Dot(graph_type='graph')
+	graph = pydot.Dot(graph_type='digraph')
 
 def get_node_color(sub):
 	if sub.find('imp.') != -1:
@@ -42,6 +42,7 @@ def subs_walk(sub, deep):
 		subs_walk(_sub, deep+1)
 
 current_sub = r2.cmd("afn")
+graph.add_node( pydot.Node( current_sub, style="filled", fillcolor=get_node_color(current_sub)[0], fontcolor=get_node_color(current_sub)[1] ) )
 print current_sub
 subs_walk(current_sub, 1)
 
