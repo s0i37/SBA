@@ -34,14 +34,18 @@ def subs_walk(sub, deep):
 	for _sub in subs:
 		print "%s%s" % (" "*deep, _sub)
 		if pydot:
-			graph.add_edge( pydot.Edge(sub, _sub) )
+			r2.cmd( "agn {sub}".format( sub=_sub ) )
 			graph.add_node( pydot.Node( _sub, style="filled", fillcolor=get_node_color(_sub)[0], fontcolor=get_node_color(_sub)[1] ) )
+			r2.cmd( "age {sub1} {sub2}".format( sub1=sub, sub2=_sub ) )
+			graph.add_edge( pydot.Edge(sub, _sub) )
 		if _sub in known_subs or deep >= MAX_DEEP:
 			continue
 		known_subs.add(_sub)
 		subs_walk(_sub, deep+1)
 
 current_sub = r2.cmd("afn")
+r2.cmd("ag-")
+r2.cmd( "agn {sub}".format( sub=current_sub ) )
 graph.add_node( pydot.Node( current_sub, style="filled", fillcolor=get_node_color(current_sub)[0], fontcolor=get_node_color(current_sub)[1] ) )
 print current_sub
 subs_walk(current_sub, 1)
