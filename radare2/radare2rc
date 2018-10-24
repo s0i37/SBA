@@ -10,4 +10,5 @@ $xfg='#!pipe /home/soier/.config/radare2/prefix/bin/xrefs_from_graph.py'
 $xtg='#!pipe /home/soier/.config/radare2/prefix/bin/xrefs_to_graph.py'
 $binviz='#!pipe /home/soier/.config/radare2/prefix/bin/binary_visualization.py'
 $r2vol='#!pipe /home/soier/.config/radare2/prefix/bin/load_from_volatility.py'
+$dd='#!pipe /home/soier/.config/radare2/prefix/bin/define_bytes.py'
 (dump , s $0, wtf `?v $S` @ $S!$SS)
