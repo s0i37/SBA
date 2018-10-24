@@ -46,7 +46,8 @@ def subs_walk(sub, deep):
 current_sub = r2.cmd("afn")
 r2.cmd("ag-")
 r2.cmd( "agn {sub}".format( sub=current_sub ) )
-graph.add_node( pydot.Node( current_sub, style="filled", fillcolor=get_node_color(current_sub)[0], fontcolor=get_node_color(current_sub)[1] ) )
+if pydot:
+	graph.add_node( pydot.Node( current_sub, style="filled", fillcolor=get_node_color(current_sub)[0], fontcolor=get_node_color(current_sub)[1] ) )
 print current_sub
 subs_walk(current_sub, 1)
 
