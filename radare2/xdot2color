@@ -1,0 +1,34 @@
+#!/usr/bin/python
+from pygments import highlight
+from pygments.lexers import NasmLexer
+from pygments.formatters import HtmlFormatter
+from lxml import html, etree
+import re
+
+while True:
+	try:
+		line = raw_input()
+	except:
+		break
+	
+	line = re.sub('color=("[^"]+")', 'color=""', line)
+	match = re.search('label=("[^"]+")', line)
+	if not match:
+		print line
+		continue
+
+	label = match.group(1)
+	out = '<<table border="1" cellborder="0" cellspacing="1" style="rounded">'
+	for instr in label.split("\\l"):
+		out += '<tr>\n'
+		out += '<td align="left" bgcolor="#f8f8f8">\n'
+		for elem in html.fromstring( highlight( instr, NasmLexer(), HtmlFormatter(noclasses=True) ) ).xpath('//pre/span'):
+			span = etree.tostring(elem)
+			if span.find('<span/>') != -1:
+				continue
+			font = span.replace('span', 'font').replace('style=', 'color=').replace('color: ', '')			
+			out += font
+		out += '</td>'
+		out += '</tr>'
+	out += '</table>>'
+	print re.sub('label=("[^"]+")', "label="+out, line)
