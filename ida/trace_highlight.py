@@ -2,9 +2,9 @@ import re
 from idaapi import *
 from idautils import *
 from idc import *
+import os
 
-#traces_dir = "\\users\\azhukov\\desktop\\FUZZ\\slssvc_traces\\"
-traces_dir = "\\users\\azhukov\\desktop\\FUZZ\\ftviewse_traces\\"
+traces_dir = r"C:\Users\user\Desktop\FUZZ\traces"
 RED = 0xaaaaff
 GREEN = 0xaaffaa
 GREEN_DARK = 0x22aa22
@@ -33,7 +33,25 @@ def reset_colors():
 			if isCode( GetFlags(element) ):
 				SetColor( element, CIC_ITEM, WHITE )
 
-def colorize_trace(trace_file, color):
+def _get_gradient(addr, base_color):
+	current_color = GetColor(addr, CIC_ITEM)
+	red = current_color & 0xff
+	green = current_color >> 8 & 0xff
+	blue = current_color >> 16 & 0xff
+	if base_color == 'red':
+		blue = blue - 0x10 if blue > 0x10 else blue
+		green = green - 0x10 if green > 0x10 else green
+		return (blue << 16) + (green << 8) + red
+	elif base_color == 'green':
+		blue = blue - 0x10 if blue > 0x10 else blue
+		red = red - 0x10 if red > 0x10 else red
+		return (blue << 16) + (green << 8) + red 
+	elif base_color == 'blue':
+		green = green - 0x10 if green > 0x10 else green
+		red = red - 0x10 if red > 0x10 else red
+		return (blue << 16) + (green << 8) + red
+
+def colorize_trace(trace_file, base_color, with_rename=''):
 	function_names = set()
 	need_comment = 0
 	with open( trace_file, "rb") as f:
@@ -41,7 +59,7 @@ def colorize_trace(trace_file, color):
 			try:
 				eip = int(line[2:10], 16)
 				if MIN <= eip <= MAX:
-					SetColor( eip, CIC_ITEM, color )
+					SetColor( eip, CIC_ITEM, _get_gradient(eip, base_color) )
 					function_names.add( GetFunctionName(eip) )
 					'''
 					eax,edx,ecx,ebx,esi,edi,ebp,esp = _get_registers(line)
@@ -55,56 +73,63 @@ def colorize_trace(trace_file, color):
 						set_cmt( eip, "esi=%s" % ecx, 1 )
 						print "0x%08x: %s" % (eip,ecx)
 					'''
+			except Exception as e:
+				pass
+	if with_rename:
+		num = 0
+		new_function_names = []
+		for function_name in function_names:
+			try:
+				MakeName( LocByName(function_name), with_rename + str(num) )
+				new_function_names.append( with_rename + str(num) )
 			except:
 				pass
+			num += 1
+		function_names = new_function_names
+
 	print 'covered %d functions:' % len(function_names)
 	print ', '.join(function_names)
 
 
-def colorize_addrs_with_comments(addrs_file, color):
-	''' comments is optional '''
-	function_names = {}
+def colorize_taint(addrs_file, color, with_rename=''):
+	function_names = []
 	commented = set()
 	with open( addrs_file, "rb") as f:
 		for line in f.read().split("\r\n"):
 			try:
 				words = line.split(' ')
 				eip = int( words[0][2:10], 16 )
-				try: function_names[ GetFunctionName(eip) ].append( hex(eip) )
-				except: function_names[ GetFunctionName(eip) ] = [ hex(eip) ]
+				function_name = GetFunctionName(eip)
+				if not function_name in function_names:
+					function_names.append(function_name)
 				SetColor( eip, CIC_ITEM, color )
 				comment = ' '.join( words[1:] )
 				if comment:
-					set_cmt( eip, comment, 1 ) if not eip in commented else set_cmt( eip, GetCommentEx(eip, 1) + '\n' + comment, 1 )
+					set_cmt( eip, comment, 0 ) if not eip in commented else set_cmt( eip, GetCommentEx(eip, 0) + '\n' + comment, 0 )
 					commented.add(eip)
 			except Exception as e:
 				pass
+
+	if with_rename:
+		num = 0
+		new_function_names = []
+		for function_name in function_names:
+			try:
+				new_function_name = with_rename + str(num)
+				MakeName( LocByName(function_name), new_function_name )
+				new_function_names.append(new_function_name)
+			except:
+				pass
+			num += 1
+		function_names = new_function_names
+
 	print "affected %d functions:" % len(function_names)
-	for function_name, addrs in function_names.items():
+	for function_name in function_names:
 		print function_name
-		print ', '.join(addrs)
+
 
 reset_colors()
-colorize_trace( traces_dir + "trace-ftae_histserv-idle.txt", color=GREY )
-colorize_trace( traces_dir + "trace-ftae_histserv.txt", color=BLUE )
-colorize_trace( traces_dir + "trace-ftae_histserv-50.txt", color=CYAN )
-colorize_addrs_with_comments( traces_dir + 'tainted_instr-ftae_histserv-crash.txt', color=YELLOW )
+#colorize_trace( os.path.join(traces_dir, "trace-rnautility_dll-recv.txt"), base_color='green', with_rename='do_recv' )
+#colorize_trace( os.path.join(traces_dir, "trace-rnautility_dll-idle.txt"), base_color='blue', with_rename='idle' )
+colorize_taint( os.path.join(traces_dir, 'taint-rnautility_dll-mtype.txt'), color=YELLOW, with_rename='taint' )
 
-'''
-SLSSVC.EXE
-trace_err.txt 					GREY
-trace_cmd1-FULL.txt 			GREEN_DARK
-trace_cmd2.txt 					GREEN
-trace_ans_cmd1.txt 				BLUE
-trace_ans_data1-FULL.txt 		CYAN
-trace_cve-2008-2005.txt			RED
-
-RDCYHOST.EXE
-trace-rdcyhost-idle.txt 		GREY
-trace-rdcyhost.txt 				CYAN
-
-FTAE_HISTSERV.EXE
-trace-ftae_histserv-idle.txt 	GREY
-trace-ftae_histserv.txt 		BLUE
-trace-ftae_histserv-50.txt 		CYAN
-'''
