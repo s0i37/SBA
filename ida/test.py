@@ -1,2 +1,0 @@
-import ctypes
-print dir()
