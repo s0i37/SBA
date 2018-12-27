@@ -7,6 +7,7 @@ if len(argv) < 2:
 
 module_name = argv[1]
 pe = pefile.PE(module_name)
+#bytes = pe.section[index].get_data()
 base = int( argv[2], 16 ) if len(argv) > 2 else pe.OPTIONAL_HEADER.ImageBase
 
 for sym in pe.DIRECTORY_ENTRY_EXPORT.symbols:
