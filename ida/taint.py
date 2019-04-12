@@ -1,7 +1,3 @@
-#from idaapi import *
-#from idautils import *
-#from idc import *
-
 RED = 0xaaaaff
 GREEN = 0xaaffaa
 GREEN_DARK = 0x22aa22
@@ -11,21 +7,20 @@ YELLOW = 0x00ffff
 GREY = 0xbbbbbb
 WHITE = 0xffffff
 
-TAINT_LOG = 'z:/root/taint.log'
 
 def colorize_taint(addrs_file, color, prefix=''):
 	function_names = []
 	commented = set()
-	with open( addrs_file, "rb") as f:
+	with open(addrs_file) as f:
 		for line in f:
 			try:
-				eip = int( line.split(';')[0].split(':')[2], 16)
-				comment = line.split(';')[1].strip()
+				eip = int( line.split(' ')[0], 16)
+				comment = ' '.join(line.split(' ')[1:]).strip()
 
 				function_name = GetFunctionName(eip)
 				if not function_name in function_names:
 					function_names.append(function_name)
-				SetColor( eip, CIC_ITEM, color )
+				SetColor(eip, CIC_ITEM, color)
 				
 				if comment:
 					if not eip in commented:
@@ -56,5 +51,6 @@ def colorize_taint(addrs_file, color, prefix=''):
 		print function_name
 
 
-#colorize_taint( TAINT_LOG, color=YELLOW, prefix='taint' )
-colorize_taint( TAINT_LOG, color=YELLOW )
+
+#colorize_taint( AskFile(0, "*.txt", "specify taint log file"), color=YELLOW, prefix='taint' )
+colorize_taint( 'z:/var/pub/winrar_fuzz/taint-winrar.txt', color=YELLOW, prefix='taint' )
