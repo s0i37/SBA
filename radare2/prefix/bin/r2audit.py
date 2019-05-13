@@ -1,8 +1,11 @@
 #!/usr/bin/python
 import r2pipe
+from time import sleep
+from colorama import Fore, Back
+'''
 import angr
-import io
 import pydot
+import io
 
 r2 = r2pipe.open()
 func_start = int( r2.cmd('?v $FB'), 16 )
@@ -99,3 +102,31 @@ def discover(sm):
 
 discover(sm)
 #import pdb; pdb.set_trace()
+'''
+
+def check_UMR_stack(r2):
+	for function in r2.cmdj("aflj"):
+		vars_r = { var[0]:var[1].split(',') if len(var)>1 else [] for var in map( lambda s:s.split('  '), map( lambda s:s.strip(), r2.cmd("afvR @ %s" % function['offset']).split('\n') ) ) }
+		vars_w = { var[0]:var[1].split(',') if len(var)>1 else [] for var in map( lambda s:s.split('  '), map( lambda s:s.strip(), r2.cmd("afvW @ %s" % function['offset']).split('\n') ) ) }
+		r2.cmd("s %s" % function['offset'])
+		for (var_r,reads) in vars_r.items():
+			if var_r.find('arg') != -1:
+				continue
+			if r2.cmd("afvd %s" % var_r).find('bp+') != -1:
+				continue
+			print "\n[*] %s %s" % ( function['name'], var_r ),
+			for read in reads:
+				print read,
+				try:
+					bb_writes = set( map(lambda a:r2.cmdj("abj 0x%x"%a)[0]['addr'], map(lambda x:int(x,16), vars_w[var_r])))
+					bb_read_path = set(r2.cmdj("abtj %s 1" % read)[0])
+				except:
+					print Fore.LIGHTBLACK_EX + "\n[!] %s error analyze %s in %s" % (function['name'], var_r, read) + Fore.RESET
+					continue
+				if not bb_writes & bb_read_path:
+					if r2.cmdj("aoj @ %s" % read)[0]['mnemonic'] != 'lea':
+						print "\n" + Back.RED + Fore.BLACK + "[+] %s: UMR in %s %s" % (read, function['name'], var_r) + Back.RESET + Fore.RESET
+						break				
+
+r2 = r2pipe.open()
+check_UMR_stack(r2)
