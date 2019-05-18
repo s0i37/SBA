@@ -24,7 +24,7 @@ def get_node_color(sub):
 def subs_walk(sub, deep):
 	subs = set()
 	for xref in r2.cmdj( "afxj @ {sub}".format(sub=sub) ):
-		if xref["type"] == "C":
+		if xref["type"] == "call":
 			addr = xref["to"]
 			_sub = r2.cmd( "afn @ {addr}".format(addr=addr) ) or r2.cmd( "fd @ {addr}".format(addr=addr) ) or "0x%08x" % addr
 			if sub == _sub:
