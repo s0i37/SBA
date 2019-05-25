@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 import r2pipe
 from pygments import highlight
 from pygments.lexers import CppLexer
@@ -12,7 +12,7 @@ DECOMPILER = 'retdec-decompiler.py'
 
 r2 = r2pipe.open()
 arch = 'x86' if r2.cmd("e asm.bits") == '32' else 'x86-64'
-vma = r2.cmd("?v $$")
+vma = r2.cmd("?v $$").strip()
 with NamedTemporaryFile() as blob:
 	exec( r2.cmd("pcp $FS") )
 	blob.write(buf)

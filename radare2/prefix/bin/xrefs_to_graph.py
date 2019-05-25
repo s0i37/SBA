@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 import r2pipe
 from sys import argv
 try:
@@ -39,7 +39,7 @@ def subs_walk(sub, deep):
 			known_subs.add(_sub)
 			subs_walk(_sub, deep+1)
 
-current_sub = r2.cmd('afn')
+current_sub = r2.cmd('afn').strip()
 r2.cmd("ag-")
 r2.cmd( "agn {sub}".format( sub=current_sub ) )
 if pydot:
