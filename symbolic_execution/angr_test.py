@@ -1,4 +1,8 @@
 import angr
+	#import claripy 	- solver
+	#import unicorn 	- CPU emulator
+	#import cle 		- loader
+	#import pyvex 		- IR
 from sys import argv
 
 from capstone import *
@@ -66,7 +70,8 @@ def correct(state):
 def wrong(state):
 	 	return state.se.eval( state.regs.rip ) >= 0x40068e
 
-project = angr.Project(binary, load_options={'auto_load_libs':False, 'main_opts': {'custom_base_addr':0x400000, 'custom_arch': 'x64'} } )
+project = angr.Project(binary, load_options={'auto_load_libs':False, 'main_opts': {'custom_base_addr':0x400000, 'custom_arch': 'x64'} } ) 	# load_options - options for cle
+#project.loader.memory[0xADDR] 		# project.loader - cle
 #state = project.factory.blank_state(addr=0x400660)
 #path = project.factory.path(state)
 #pg = project.factory.path_group(save_unconstrained=True)  # SimulationManager
@@ -104,8 +109,9 @@ state.regs.rip = 0x4006b0
 #proj.factory.block(0x0804873c).capstone.pp()
 #proj.factory.block(0x0804873c).vex.pp()
 
-sm = project.factory.simgr(state, save_unconstrained=True)  # SimulationManager
-sm.use_technique(angr.exploration_techniques.DFS())
+sm = project.factory.simgr(state, save_unconstrained=True)  # SimState -> SimulationManager
+sm.use_technique(angr.exploration_techniques.DFS()) 	# deep search
+
 '''
 #sm.explore( step_func=step )
 sm.explore( find=0x400675, avoid=0x400688 )
@@ -130,7 +136,7 @@ while sm.active and not sm.unconstrained:
 	print "step: %d" % i
 	sm.step()
 	print sm.stashes['active']
-	for path in sm.active:
+	for path in sm.active: 		# for SimState in SimulationManager
 		if 0x4006b0 <= path.addr <= 0x4006f0:
 			if not path.addr in basic_blocks:
 				branches.append(path)					# state

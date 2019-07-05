@@ -4,14 +4,11 @@ from sys import argv
 import logging
 logging.getLogger('angr').setLevel('CRITICAL')
 
-def _exec(state):
-	print( "[exec] 0x%x" % state.scratch.ins_addr )
 
 corefile = argv[1]
 project = angr.Project(corefile, load_options={'main_opts': {'backend': 'elfcore'} } )
 state = project.factory.entry_state()
 #import pdb;pdb.set_trace()
-#state.inspect.b('instruction', when=angr.BP_AFTER, action=_exec)
 
 state.regs.rax=            0x7fffffffe2c2
 state.regs.rbx=            0x0
