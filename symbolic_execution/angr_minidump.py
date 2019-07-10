@@ -16,7 +16,7 @@ def get_perm_code(perm_str):
 		code += 1
 	return code
 
-project = angr.Project( "/bin/true", load_options={'auto_load_libs':False, 'main_opts': {'custom_base_addr': 0, 'backend': 'blob', 'custom_arch': 'i386'} } )
+project = angr.load_shellcode("\x90".encode(), 'i686', start_offset=0, load_address=0)
 state = project.factory.entry_state()
 
 for page in listdir( argv[1] ):
