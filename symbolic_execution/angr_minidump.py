@@ -27,3 +27,30 @@ for page in listdir( argv[1] ):
 		state.memory.store(int(vaddr,16), memory)
 		state.memory.permissions(int(vaddr,16), get_perm_code(perm))
 
+state.regs.eax=            0xf
+state.regs.ecx=            0x2b4790
+state.regs.edx=            0x0
+state.regs.ebx=            0x6706cc
+state.regs.esp=            0x2cbfdac
+state.regs.ebp=            0x2cbfdcc
+state.regs.esi=            0x2271350
+state.regs.edi=            0x2cbfe58
+state.regs.eip=            0x666131
+sym_data = state.solver.BVS('', 8*14)
+state.memory.store(0x02186848, sym_data)
+
+sm = project.factory.simgr(state, save_unconstrained=True)  # SimState -> SimulationManager
+
+basic_blocks = set()
+
+while sm.active and not sm.unconstrained:
+	sm.step()
+	if 0x666131 > sm.one_active.addr > 0x8ec000:
+		break
+	print( "[*] 0x%x %s" % ( sm.one_active.addr, str(sm.stashes['active']) ) )
+	for path in sm.active: 		# for SimState in SimulationManager
+		if not path.addr in basic_blocks:
+			basic_blocks.add(path.addr)
+			if path.satisfiable():
+				input_data = path.se.eval( sym_data, cast_to=bytes )#.hex()
+				print( "[+] 0x%x %s" % (path.addr, input_data.decode()) )
