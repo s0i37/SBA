@@ -9,6 +9,7 @@ e asm.bytespace = true
 e dbg.trace = true
 e key.f6 = aesb
 e cfg.newtab = true
+e scr.wheel=false
 $emu='aei;aeip;aeim;aets+'
 #$retdec='#!pipe /home/soier/.config/radare2/prefix/bin/retdec'
 $retdec='#!pipe /home/soier/.config/radare2/prefix/bin/retdec.py'
