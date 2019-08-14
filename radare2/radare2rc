@@ -1,23 +1,20 @@
-eco behelit
+eco s0i37
 e scr.color = 2
 e scr.utf8 = true
 e scr.utf8.curvy = true
-e asm.varsub_only = false
 e graph.cmtright = true
 e asm.bytespace = true
-#e asm.var.access = true
 e dbg.trace = true
 e key.f6 = aesb
 e cfg.newtab = true
-e scr.wheel=false
+e scr.wheel = false
+e r2dec.highlight = true
 $emu='aei;aeip;aeim;aets+'
-#$retdec='#!pipe /home/soier/.config/radare2/prefix/bin/retdec'
-$retdec='#!pipe /home/soier/.config/radare2/prefix/bin/retdec.py'
-$snow='#!pipe /home/soier/.config/radare2/prefix/bin/snow.py'
+#$retdec='#!pipe /home/soier/.config/radare2/prefix/bin/retdec.py'
+#$snow='#!pipe /home/soier/.config/radare2/prefix/bin/snow.py'
 $xfg='#!pipe /home/soier/.config/radare2/prefix/bin/xrefs_from_graph.py'
 $xtg='#!pipe /home/soier/.config/radare2/prefix/bin/xrefs_to_graph.py'
-$binviz='#!pipe /home/soier/.config/radare2/prefix/bin/binary_visualization.py'
 $r2vol='#!pipe /home/soier/.config/radare2/prefix/bin/load_from_volatility.py'
-$dd='#!pipe /home/soier/.config/radare2/prefix/bin/define_bytes.py'
+#$dd='#!pipe /home/soier/.config/radare2/prefix/bin/define_bytes.py'
 $memdump='#!pipe /home/soier/.config/radare2/prefix/bin/memdump.py'
 (dump , s $0, wtf `?v $S` @ $S!$SS)
