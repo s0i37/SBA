@@ -17,6 +17,7 @@ $xtg='#!pipe /home/soier/.config/radare2/prefix/bin/xrefs_to_graph.py'
 $pointers_from='#!pipe /home/soier/.config/radare2/prefix/bin/pointers_from.py'
 $pointers_to='#!pipe /home/soier/.config/radare2/prefix/bin/pointers_to.py'
 $r2vol='#!pipe /home/soier/.config/radare2/prefix/bin/load_from_volatility.py'
+$r2rekall='#!pipe /home/soier/.config/radare2/prefix/bin/load_from_rekall.py'
 #$dd='#!pipe /home/soier/.config/radare2/prefix/bin/define_bytes.py'
 $memdump='#!pipe /home/soier/.config/radare2/prefix/bin/memdump.py'
 (dump , s $0, wtf `?v $S` @ $S!$SS)
