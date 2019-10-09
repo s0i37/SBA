@@ -27,11 +27,12 @@ def xrefs_from(addr):
 	return r2.cmdj("axfj @%d" % addr)
 
 
+EIP = {16: "ip", 32: "eip", 64: "rip"}.get( r2.cmdj("ej")["asm.bits"] )
 class Emu:
 	def __init__(self):
 		self.clean()
 		self.init()
-		self.rip = r2.cmdj("arj")["eip"]
+		self.rip = r2.cmdj("arj")[EIP]
 		self.__idx = 0
 		pass
 
@@ -68,7 +69,7 @@ class Emu:
 
 	def step(self):
 		r2.cmd("aes")
-		self.rip = r2.cmdj("arj")["eip"]
+		self.rip = r2.cmdj("arj")[EIP]
 
 
 
@@ -88,7 +89,7 @@ while True:
 	instr = disas(emu.rip)
 	if disas(emu.rip)["mnemonic"] == "call":
 		if get_flag_by_addr( int( xrefs_from(emu.rip)[0]["to"] ) ).get("name","").find(".imp.") != -1:
-			emu.goto( r2.cmdj("pdj 2@eip")[1]["offset"] )
+			emu.goto( r2.cmdj("pdj 2@%s"%EIP)[1]["offset"] )
 			continue
 		if disas(emu.rip)["disasm"].find("sym.__x86.get_pc_thunk.ax") == -1:
 			deep += 1
@@ -106,11 +107,19 @@ while True:
 			io = "->"
 		elif access.find("mem.write.data") != -1:
 			io = "<-"
+		elif access.find("reg.read.") != -1:
+			io = "->"
+		elif access.find("reg.write.") != -1:
+			io = "<-"
 		else:
 			io = None
 		if io:
-			addr = int( access.split("=")[0].split(".")[-1], 16)
-			ctype = {1: "char", 2: "short", 4: "int", 8: "long long"}[ len( access.split("=")[1] )/2 ]
+			if access.find("mem") != -1:
+				addr = int( access.split("=")[0].split(".")[-1], 16)
+				ctype = {1: "char", 2: "short", 4: "int", 8: "long long"}[ len( access.split("=")[1] )/2 ]
+			elif access.find("reg") != -1:
+				addr = int( access.split("=")[1], 16)
+				ctype = "void *"
 			flag_used = get_flag_by_addr(addr)
 			function_use = get_flag_by_addr(rip)
 			if flag_used["name"] == flag["name"]:
