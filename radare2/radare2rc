@@ -1,10 +1,11 @@
-eco s0i37
+eco s0i37_behelit
 e scr.color = 2
 e scr.utf8 = true
 e scr.utf8.curvy = true
 e graph.cmtright = true
 e asm.bytespace = true
 e dbg.trace = true
+#e io.cache = true
 e key.f6 = aesb
 e cfg.newtab = true
 e scr.wheel = false
