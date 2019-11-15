@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 import r2pipe
 from sys import argv
 try:
@@ -26,7 +26,7 @@ def subs_walk(sub, deep):
 	for xref in r2.cmdj( "afxj @ {sub}".format(sub=sub) ):
 		if xref["type"] == "call":
 			addr = xref["to"]
-			_sub = (r2.cmd( "afn @ {addr}".format(addr=addr) ) or r2.cmd( "fd @ {addr}".format(addr=addr) ) or "0x%08x" % addr).strip()
+			_sub = r2.cmd( "afn @ {addr}".format(addr=addr) ) or r2.cmd( "fd @ {addr}".format(addr=addr) ) or "0x%08x" % addr
 			if sub == _sub:
 				continue
 			subs.add( _sub )
@@ -43,7 +43,7 @@ def subs_walk(sub, deep):
 		known_subs.add(_sub)
 		subs_walk(_sub, deep+1)
 
-current_sub = r2.cmd("afn").strip()
+current_sub = r2.cmd("afn")
 r2.cmd("ag-")
 r2.cmd( "agn {sub}".format( sub=current_sub ) )
 if pydot:
@@ -52,6 +52,5 @@ print current_sub
 subs_walk(current_sub, 1)
 
 if pydot:
-	graph.write_png('xrefs_from_graph.png')
-	os.system('xdg-open xrefs_from_graph.png 1> /dev/null 2> /dev/null')
-	os.unlink('xrefs_from_graph.png')
+	graph.write_dot('xrefs_from_%s.dot' % current_sub)
+	os.system('xdot xrefs_from_%s.dot &' % current_sub)

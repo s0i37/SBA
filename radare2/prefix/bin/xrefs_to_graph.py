@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 import r2pipe
 from sys import argv
 try:
@@ -39,7 +39,7 @@ def subs_walk(sub, deep):
 			known_subs.add(_sub)
 			subs_walk(_sub, deep+1)
 
-current_sub = r2.cmd('afn').strip()
+current_sub = r2.cmd('afn')
 r2.cmd("ag-")
 r2.cmd( "agn {sub}".format( sub=current_sub ) )
 if pydot:
@@ -48,6 +48,5 @@ print current_sub
 subs_walk(current_sub, 1)
 
 if pydot:
-	graph.write_png('xrefs_to_graph.png')
-	os.system('xdg-open xrefs_to_graph.png 1> /dev/null 2> /dev/null')
-	os.unlink('xrefs_to_graph.png')
+	graph.write_dot('xrefs_to_%s.dot' % current_sub)
+	os.system('xdot xrefs_to_%s.dot &' % current_sub)
