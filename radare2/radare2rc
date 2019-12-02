@@ -21,4 +21,5 @@ $r2vol='#!pipe /home/soier/.config/radare2/prefix/bin/load_from_volatility.py'
 $r2rekall='#!pipe /home/soier/.config/radare2/prefix/bin/load_from_rekall.py'
 #$dd='#!pipe /home/soier/.config/radare2/prefix/bin/define_bytes.py'
 $memdump='#!pipe /home/soier/.config/radare2/prefix/bin/memdump.py'
+$unsafe='#!pipe /home/soier/.config/radare2/prefix/bin/unsafe.py'
 (dump , s $0, wtf `?v $S` @ $S!$SS)

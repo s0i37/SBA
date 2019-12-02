@@ -1,28 +1,29 @@
 #!/usr/bin/python
 import r2pipe
 from sys import argv
+from os import path, listdir
 
-if len(argv) < 3:
-	print "%s memdump.dmp memmap.txt [0xFROM] [0xTO]" % argv[0]
+
+if len(argv) < 2:
+	print "%s vaddump/ [0xFROM] [0xTO]" % argv[0]
 	exit()
 
 r2 = r2pipe.open()
-memdump = argv[1]
-memmap = open( argv[2], "rb" )
-from_addr = int( argv[3], 16 ) if len(argv) >= 4 else 0
-to_addr = int( argv[4], 16 ) if len(argv) >= 5 else 0
+vaddump = argv[1]
+from_addr = int( argv[2], 16 ) if len(argv) >= 3 else 0
+to_addr = int( argv[3], 16 ) if len(argv) >= 4 else 0
 
-r2.cmd("o %s" % memdump)
-for file in r2.cmdj("oj"):
-	if file["uri"] == memdump:
-		break
+pages = {}
+for page_file in listdir(vaddump):
+	page_path = path.join(vaddump, page_file)
+	(virtual_from,virtual_to) = map( lambda x: int(x,16), page_file.split('.')[3].split('-') )
+	pages[virtual_from] = page_path
 
-for page in memmap:
-	try:
-		(virtual,physical,size,dump_file_offset) = map( lambda x: int(x, 16), page.split() )
-		if (from_addr or to_addr) and (from_addr > virtual or virtual > to_addr):
-			continue
-		r2.cmd( "om %d %d %d %d" % ( file["fd"], virtual, size, dump_file_offset ) )
-		print "[+] 0x%08x" % virtual
-	except Exception as e:
-		print "[!] " + str(e)
+addrs = pages.keys()
+addrs.sort(); addrs.reverse()
+for addr in addrs:	
+	if (from_addr or to_addr) and (from_addr > addr or virtual_to > addr):
+		continue
+	r2.cmd( "on %s 0x%x" % (page_path, addr) )
+	print "[+] 0x%08x - %s" % ( addr, path.basename(page_path) )
+	
