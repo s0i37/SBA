@@ -10,8 +10,10 @@ ec input rgb:5fff5f
 ec prompt rgb:5f87ff
 ec args rgb:ff005f
 ec help rgb:af87d7
-ec comment rgb:5f87ff
-ec usrcmt rgb:5f87ff
+#ec comment rgb:5f87ff
+ec comment rgb:4e4e4e
+#ec usrcmt rgb:5f87ff
+ec usrcmt rgb:c19c00
 ec flag rgb:5f87ff
 ec fline rgb:af87ff
 ec fname rgb:5f87ff
@@ -20,7 +22,8 @@ ec label rgb:5f87ff
 ec mov rgb:5f87ff
 ec call rgb:00ff5f
 ec jmp rgb:5f5fff
-ec cjmp rgb:5f87ff
+#ec cjmp rgb:5f87ff
+ec cjmp rgb:13a10e
 ec cmp rgb:ff005f
 ec nop rgb:4e4e4e
 ec math rgb:ffff5f
@@ -33,7 +36,8 @@ ec crypto rgb:ff5f5f
 ec trap rgb:ff005f
 ec invalid rgb:ff005f
 ec num rgb:af87ff
-ec reg rgb:5fff5f
+#ec reg rgb:5fff5f
+ec reg rgb:73adad
 ec creg rgb:5f87ff
 ec ai.read rgb:00ff5f
 ec ai.write rgb:5f87ff
