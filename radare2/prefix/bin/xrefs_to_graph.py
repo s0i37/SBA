@@ -39,7 +39,7 @@ def subs_walk(sub, deep):
 			known_subs.add(_sub)
 			subs_walk(_sub, deep+1)
 
-current_sub = r2.cmd('afn')
+current_sub = r2.cmd('afn').split('\n')[0]
 r2.cmd("ag-")
 r2.cmd( "agn {sub}".format( sub=current_sub ) )
 if pydot:

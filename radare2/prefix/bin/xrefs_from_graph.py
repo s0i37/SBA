@@ -26,7 +26,7 @@ def subs_walk(sub, deep):
 	for xref in r2.cmdj( "afxj @ {sub}".format(sub=sub) ):
 		if xref["type"] == "call":
 			addr = xref["to"]
-			_sub = r2.cmd( "afn @ {addr}".format(addr=addr) ) or r2.cmd( "fd @ {addr}".format(addr=addr) ) or "0x%08x" % addr
+			_sub = r2.cmd( "afn @ {addr}".format(addr=addr) ).split('\n')[0] or r2.cmd( "fd @ {addr}".format(addr=addr) ) or "0x%08x" % addr
 			if sub == _sub:
 				continue
 			subs.add( _sub )
@@ -43,7 +43,7 @@ def subs_walk(sub, deep):
 		known_subs.add(_sub)
 		subs_walk(_sub, deep+1)
 
-current_sub = r2.cmd("afn")
+current_sub = r2.cmd("afn").split('\n')[0]
 r2.cmd("ag-")
 r2.cmd( "agn {sub}".format( sub=current_sub ) )
 if pydot:
