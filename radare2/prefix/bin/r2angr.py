@@ -106,7 +106,10 @@ def symbolic_execute():
 	state.inspect.b('reg_write', when=angr.BP_AFTER, action=reg_write_after)
 
 	for (reg,value) in r2.cmdj("arj").items():
-		setattr(state.regs, reg, value)
+		try:
+			setattr(state.regs, reg, value)
+		except:
+			pass
 	load_page(state, int(r2.cmdj("?j $O")["uint64"]))
 	
 	r2.cmd("fs symbolic")

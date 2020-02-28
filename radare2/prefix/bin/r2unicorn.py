@@ -81,7 +81,10 @@ def emulation():
 
 	while True:
 		try:
-			mu.emu_start(mu.reg_read(UC_X86_REG_RIP), 0, 0, 1)
+			if env["asm.arch"] == "x86" and env["asm.bits"] == 64:
+				mu.emu_start(mu.reg_read(UC_X86_REG_RIP), 0, 0, 1)
+			elif env["asm.arch"] == "x86" and env["asm.bits"] == 32:
+				mu.emu_start(mu.reg_read(UC_X86_REG_EIP), 0, 0, 1)
 			if input():
 				break
 		except UcError as e:
