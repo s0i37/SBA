@@ -35,6 +35,11 @@ def load_page(state, addr):
 			return True
 	return False
 
+def check_page(state, addr):
+	if not is_memory_loaded(state, addr):
+		if not load_page(state, addr):
+			print("[-] {addr} not mapped".format(addr=hex(addr)))
+
 def taint_mem(state, rip, mem_addr, mem_size):
 	mem = state.memory.load(mem_addr, mem_size, disable_actions=True, inspect=False)
 	mem_addr = state.se.eval(mem_addr)
@@ -46,18 +51,13 @@ def taint_reg(state, rip, reg_name, reg_value):
 	if reg_value.symbolic:
 		print( "[taint] 0x%x: %s" % (rip, reg_name) )
 
-
 def mem_read_before(state):
 	addr = state.se.eval(state.inspect.mem_read_address)
-	if not is_memory_loaded(state, addr):
-		if not load_page(state, addr):
-			print("[-] {addr} not mapped".format(addr=addr))
+	check_page(state, addr)
 
 def mem_write_before(state):
 	addr = state.se.eval(state.inspect.mem_write_address)
-	if not is_memory_loaded(state, addr):
-		if not load_page(state, addr):
-			print("[-] {addr} not mapped".format(addr=addr))
+	check_page(state, addr)
 
 def mem_read_after(state):
 	exec_addr = state.scratch.ins_addr
@@ -137,8 +137,8 @@ def symbolic_execute():
 
 	basic_blocks = set()
 
-
 	while sm.active:
+		check_page(sm.active[0], sm.active[0].addr)
 		print(sm.active)
 		sm.step()
 		if sm.active and 0x555555555000 > sm.active[0].addr > 0x555555556000:
