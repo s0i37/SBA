@@ -32,14 +32,24 @@ def get_perm_code(perm_str):
 	return code
 
 def load_page(state, addr):
-	for page in r2.cmdj("omj"):
-		if page['from'] <= addr < page['to']:
-			r2.cmd("pr {size}@{offset} > /tmp/page.bin".format(size=page['to']-page['from'], offset=page['from']))
-			with open("/tmp/page.bin", "rb") as memory:
-				state.memory.store(page['from'], memory.read(), disable_actions=True, inspect=False)
-				state.memory.permissions( page['from'], get_perm_code(page['perm']) )
-				print( Fore.BLUE + "[*] load {vaddr}".format(vaddr=hex(page['from'])) + Fore.RESET )
-			return True
+	if r2.cmdj("dmj"):	# dynamic mode
+		for page in r2.cmdj("dmj"):
+			if page['addr'] <= addr < page['addr_end']:
+				r2.cmd("pr {size}@{offset} > /tmp/page.bin".format(size=page['addr_end']-page['addr'], offset=page['addr']))
+				with open("/tmp/page.bin", "rb") as memory:
+					state.memory.store(page['addr'], memory.read(), disable_actions=True, inspect=False)
+					state.memory.permissions( page['addr'], get_perm_code(page['perm']) )
+					print( Fore.BLUE + "[*] load {vaddr}".format(vaddr=hex(page['addr'])) + Fore.RESET )
+				return True
+	else:				# static mode
+		for page in r2.cmdj("omj"):
+			if page['from'] <= addr < page['to']:
+				r2.cmd("pr {size}@{offset} > /tmp/page.bin".format(size=page['to']-page['from'], offset=page['from']))
+				with open("/tmp/page.bin", "rb") as memory:
+					state.memory.store(page['from'], memory.read(), disable_actions=True, inspect=False)
+					state.memory.permissions( page['from'], get_perm_code(page['perm']) )
+					print( Fore.BLUE + "[*] load {vaddr}".format(vaddr=hex(page['from'])) + Fore.RESET )
+				return True
 	return False
 
 def check_page(state, addr):
@@ -51,20 +61,14 @@ def taint_mem(state, rip, mem_addr, mem_size):
 	mem = state.memory.load(mem_addr, mem_size, disable_actions=True, inspect=False)
 	mem_addr = state.se.eval(mem_addr)
 	if mem.symbolic:
-		r2.cmd("fs taint")
-		r2.cmd('"f {comment}"@{offset}'.format(comment="0x%x = %s"%(mem_addr,str(mem)), offset=rip))
 		r2.cmd("ecHi yellow @{offset}".format(offset=rip))
 		r2.cmd('"CCu [taint]{comment}"@{offset}'.format(comment="0x%x = %s"%(mem_addr,str(mem)), offset=rip))
-		r2.cmd("fs *")
 		print( Fore.LIGHTYELLOW_EX + "[taint] 0x%x: 0x%x = %s" % (rip, mem_addr, str(mem)) + Fore.RESET )
 
 def taint_reg(state, rip, reg_name, reg_value):
 	if reg_value.symbolic:
-		r2.cmd("fs taint")
-		r2.cmd('"f {comment}"@{offset}'.format(comment=reg_name, offset=rip))
 		r2.cmd("ecHi yellow @{offset}".format(offset=rip))
 		r2.cmd('"CCu [taint]{comment}"@{offset}'.format(comment=reg_name, offset=rip))
-		r2.cmd("fs *")
 		print( Fore.LIGHTYELLOW_EX + "[taint] 0x%x: %s" % (rip, reg_name) + Fore.RESET )
 
 def mem_read_before(state):
