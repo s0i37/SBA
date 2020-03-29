@@ -23,7 +23,7 @@ $r2rekall='#!pipe /home/soier/.local/share/radare2/prefix/bin/load_from_rekall.p
 #$dd='#!pipe /home/soier/.local/share/radare2/prefix/bin/define_bytes.py'
 $memdump='#!pipe /home/soier/.local/share/radare2/prefix/bin/memdump.py'
 $memload='#!pipe /home/soier/.local/share/radare2/prefix/bin/memload.py'
-$unsafe='#!pipe /home/soier/.local/share/radare2/prefix/bin/unsafe.py'
+$analyze='#!pipe /home/soier/.local/share/radare2/prefix/bin/analyze.py'
 $r2angr='#!pipe /home/soier/.local/share/radare2/prefix/bin/r2angr.py'
 $r2unicorn='#!pipe /home/soier/.local/share/radare2/prefix/bin/r2unicorn.py'
 (dump , s $0, wtf `?v $S` @ $S!$SS)

@@ -18,6 +18,8 @@ def get_node_color(sub):
 		return 'yellow','black'
 	elif sub.find('sym.') != -1:
 		return 'green','black'
+	elif sub.find('sub.') != -1:
+		return 'purple','white'
 	else:
 		return 'black','white'
 
