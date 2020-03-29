@@ -1,8 +1,9 @@
 import sys
-sys.path.append("/root/src/openreil/")
+sys.path.append("/home/soier/src/openreil/")
 from pyopenreil.REIL import *
 
-opcode = "83c007".decode('hex') # add eax, 7
+#opcode = "83c007".decode('hex') # add eax, 7
+opcode = sys.argv[1].decode('hex')
 
 storage = CodeStorageMem(ARCH_X86)
 reader = ReaderRaw(ARCH_X86, opcode, addr = 0)
