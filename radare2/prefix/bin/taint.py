@@ -2,12 +2,15 @@
 import r2pipe
 import argparse
 
+__author__ = "s0i37"
+__version__ = 0.10
 
 parser = argparse.ArgumentParser( description='static taint analysis' )
 parser.add_argument("-reg", action="append", default=[], help='taint register')
 parser.add_argument("-mem", action="append", default=[], help='taint memory')
-parser.add_argument("-deep", type=int, default=3, help='max analysis deep')
-parser.add_argument("-v", type=bool, default=False, help='verbose')
+parser.add_argument("-deep", type=int, default=1, help='max analysis deep')
+parser.add_argument("-v", action="store_true", help='verbose')
+parser.add_argument("--version", action="store_true", help='show version')
 args = parser.parse_args()
 r2 = r2pipe.open()
 
@@ -109,6 +112,8 @@ def init_taint(args):
 			pass
 
 		flag = get_flag_by_name(mem)
+		if not flag:
+			flag = get_flag_by_name("fcnvar." + mem)
 		if flag:
 			for i in xrange(flag["size"]):
 				mems_taint.add(flag["offset"]+i)
@@ -123,7 +128,6 @@ class Emu:
 		self.init()
 		self.rip = r2.cmdj("arj")[EIP]
 		self.__idx = 0
-		pass
 
 	def __del__(self):
 		self.clean()
@@ -150,7 +154,6 @@ class Emu:
 		esil_trace_log = r2.cmd("dte").split('\n')
 		esil_trace_log = filter(lambda l:l!='', esil_trace_log)
 		self.__idx = int(esil_trace_log[-1][4:])
-		access = []
 		for esil_event in esil_trace_log:
 			if esil_event.startswith("%d." % self.__idx):
 				if esil_event.find("mem.read.data") != -1:
@@ -184,18 +187,12 @@ def get_rip():
 def set_rip(addr):
 	r2.cmd("s {addr}".format(addr=addr))
 
-def get_var(addr):
-	try:
-		return r2.cmd("afvR; afvW ~0x%x" % addr).split()[0]
-	except:
-		pass
-
 def get_flag_by_addr(addr):
 	return r2.cmdj("fdj @{addr}".format(addr=addr))
 
 def get_flag_by_name(flag_name):
 	for flag in r2.cmdj("fj"):
-		if flag["name"].find(flag_name) != -1:
+		if flag["name"].lower() == flag_name.lower() != -1:
 			return flag
 
 def next_instruction_addr(addr):
@@ -332,13 +329,23 @@ def main(args):
 		#	break
 
 
-try:
-	main(args)
-except:
-	pass
+if __name__ == '__main__':
+	if args.version:
+		print __version__
+		exit()
+	if args.reg == [] and args.mem == []:
+		parser.print_help()
+		exit()
 
-if tainted:
-	for t in tainted:
-		print t
-else:
-	print "[-] no taint"
+	try:
+		main(args)
+	except KeyboardInterrupt:
+		print "[!] interrupted"
+	except:
+		print "[!] something went wrong"
+
+	if tainted:
+		for t in tainted:
+			print t
+	else:
+		print "[-] no taint"
