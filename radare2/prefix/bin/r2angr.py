@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3.7
 import angr
 import r2pipe
 from colorama import Fore, Back
@@ -58,17 +58,21 @@ def check_page(state, addr):
 			print(Back.RED + "[-] {addr} not mapped".format(addr=hex(addr)) + Back.RESET)
 
 def taint_mem(state, rip, mem_addr, mem_size):
+	global is_taint
 	mem = state.memory.load(mem_addr, mem_size, disable_actions=True, inspect=False)
 	mem_addr = state.se.eval(mem_addr)
 	if mem.symbolic:
+		is_taint = True
 		r2.cmd("ecHi yellow @{offset}".format(offset=rip))
-		r2.cmd('"CCu [taint]{comment}"@{offset}'.format(comment="0x%x = %s"%(mem_addr,str(mem)), offset=rip))
+		#r2.cmd('"CCu [taint]{comment}"@{offset}'.format(comment="0x%x = %s"%(mem_addr,str(mem)), offset=rip))
 		print( Fore.LIGHTYELLOW_EX + "[taint] 0x%x: 0x%x = %s" % (rip, mem_addr, str(mem)) + Fore.RESET )
 
 def taint_reg(state, rip, reg_name, reg_value):
+	global is_taint
 	if reg_value.symbolic:
+		is_taint = True
 		r2.cmd("ecHi yellow @{offset}".format(offset=rip))
-		r2.cmd('"CCu [taint]{comment}"@{offset}'.format(comment=reg_name, offset=rip))
+		#r2.cmd('"CCu [taint]{comment}"@{offset}'.format(comment=reg_name, offset=rip))
 		print( Fore.LIGHTYELLOW_EX + "[taint] 0x%x: %s" % (rip, reg_name) + Fore.RESET )
 
 def mem_read_before(state):
@@ -118,8 +122,10 @@ def _exec(state):
 	symbol = get_symbol(exec_addr)
 	print( Fore.LIGHTCYAN_EX + "0x%x(%s): %s" % (exec_addr, symbol, r2.cmdj("aoj @ {address}".format(address=exec_addr))[0]["disasm"]) + Fore.RESET )
 
-
+is_taint = False
 def symbolic_execute():
+	global is_taint
+	inputs = set()
 	state = project.factory.entry_state(mode='symbolic')
 
 	state.inspect.b('instruction', when=angr.BP_AFTER, action=_exec)
@@ -137,10 +143,15 @@ def symbolic_execute():
 			pass
 	
 	r2.cmd("fs symbolic")
+	sym_datas = []
 	for symbolic in r2.cmdj("fj"):
-		check_page(state, symbolic["offset"])
 		sym_data = state.solver.BVS(symbolic["name"], 8*symbolic["size"])
-		state.memory.store(symbolic["offset"], sym_data, disable_actions=True, inspect=False)
+		if symbolic["name"] in ("eax","edx","ecx","ebx","esi","edi"):
+			state.registers.store(symbolic["name"], sym_data)
+		else:
+			check_page(state, symbolic["offset"])
+			state.memory.store(symbolic["offset"], sym_data, disable_actions=True, inspect=False)
+		sym_datas.append(sym_data)
 	r2.cmd("fs *")
 
 	sm = project.factory.simgr(state, save_unconstrained=False)
@@ -150,6 +161,7 @@ def symbolic_execute():
 	while sm.active:
 		check_page(sm.active[0], sm.active[0].addr)
 		print(sm.active)
+		is_taint = False
 		sm.step()
 
 		if input():
@@ -159,10 +171,14 @@ def symbolic_execute():
 			#path.posix.queued_syscall_returns = [0]
 			if not path.addr in basic_blocks or 1:
 				basic_blocks.add(path.addr)
-				if path.satisfiable() and path.se.eval(sym_data) != 0:
-					input_data = path.se.eval(sym_data, cast_to=bytes)
-					r2.cmd('"CCu [symbolic]{solve}"@{offset}'.format(solve=repr(input_data), offset=path.addr))
-					print( Back.GREEN + "[+] 0x%x %s" % (path.addr, input_data) + Back.RESET )
+				for sym_data in sym_datas:
+					if path.satisfiable() and is_taint: #and path.se.eval(sym_data) != 0:
+						input_data = path.se.eval(sym_data, cast_to=bytes)
+						if not input_data in inputs or 1:
+							r2.cmd('"CCu [symbolic]{sym}={solve}"@{offset}'.format(sym=sym_data, solve=repr(input_data)[:50], offset=path.addr))
+							print( Back.GREEN + "[+] 0x%x %s %s" % (path.addr, sym_data, input_data[:20]) + Back.RESET )
+							inputs.add(input_data)
+							#break
 
 	
 	print("covered basic blocks:")
@@ -181,4 +197,4 @@ elif env["asm.arch"] == "x86" and env["asm.bits"] == 32:
 def on_sysenter(state):
 	state.regs.eip = 0x7c90e4f4
 
-symbolic_execute()
+inputs = symbolic_execute()
